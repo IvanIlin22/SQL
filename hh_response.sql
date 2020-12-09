@@ -8,7 +8,7 @@ WHERE
 	compensation_from IS null
 	AND compensation_to IS null
 ORDER BY date_creation DESC
-LIMIT(10);
+LIMIT 10;
 
 WITH compensation AS (
 	SELECT position_name,
@@ -37,13 +37,13 @@ SELECT
 FROM response r
 INNER JOIN vacancy v ON r.vacancy_id = v.vacancy_id
 INNER JOIN employer e ON v.employer_id = e.employer_id
-GROUP BY r.vacancy_id, e.employer_name
+GROUP BY r.vacancy_id, e.employer_id
 )
 SELECT employer_name
 FROM count_response
 GROUP BY employer_name
 ORDER BY max(count) DESC
-limit (5);
+LIMIT 5;
 
 WITH vacancy_count AS (
 SELECT
@@ -54,23 +54,23 @@ GROUP BY employer_id
 )
 SELECT
 	e.employer_name,
-	percentile_cont(0.98) WITHIN GROUP(ORDER BY count)
+	percentile_cont(0.5) WITHIN GROUP(ORDER BY count)
 FROM vacancy_count v
-INNER JOIN employer e ON v.employer_id = e.employer_id
-GROUP BY e.employer_name; 
+RIGHT JOIN employer e ON v.employer_id = e.employer_id
+GROUP BY e.employer_id; 
 
 WITH date_vacancy_response AS(
 SELECT
 	e.area_id,
-	age(r.date_response, v.date_creation)
+	age(r.date_response, v.date_creation) AS time
 FROM vacancy v
 INNER JOIN response r ON v.vacancy_id = r.vacancy_id
 INNER JOIN employer e ON v.employer_id = e.employer_id
 )
 SELECT
 	area_id,
-	max(age) AS max_time,
-	min(age) AS min_time
+	max(time) AS max_time,
+	min(time) AS min_time
 FROM date_vacancy_response
 GROUP BY area_id;
 
