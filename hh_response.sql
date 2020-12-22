@@ -63,25 +63,16 @@ WITH date_vacancy_response AS(
 SELECT
 	e.area_id,
 	r.vacancy_id,
-	age(r.date_response, v.date_creation) AS time
+	min(age(r.date_response, v.date_creation)) AS time
 FROM vacancy v
 INNER JOIN response r ON v.vacancy_id = r.vacancy_id
 INNER JOIN employer e ON v.employer_id = e.employer_id
-), min_response AS (
-SELECT
-	area_id,
-	vacancy_id,
-	max(time) AS max_time,
-	min(time) AS min_time
-FROM date_vacancy_response
-GROUP BY vacancy_id, area_id
+GROUP BY r.vacancy_id, e.area_id
 )
 SELECT
 	area_id,
-	min_time,
-	max_time
-FROM min_response
-WHERE min_time IN (
-	SELECT min(min_time) FROM min_response GROUP BY area_id
-);
+	min(time) AS min_time,
+	max(time) AS max_time
+FROM date_vacancy_response
+GROUP BY area_id;
 
