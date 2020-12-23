@@ -33,16 +33,18 @@ FROM compensation;
 WITH count_response AS (
 SELECT
 	count(r.vacancy_id),
+	e.employer_id,
 	e.employer_name 
 FROM response r
 INNER JOIN vacancy v ON r.vacancy_id = v.vacancy_id
-INNER JOIN employer e ON v.employer_id = e.employer_id
+RIGHT JOIN employer e ON v.employer_id = e.employer_id
 GROUP BY r.vacancy_id, e.employer_id
 )
-SELECT employer_name
+SELECT
+	employer_name
 FROM count_response
-GROUP BY employer_name
-ORDER BY max(count) DESC
+GROUP BY employer_id, employer_name
+ORDER BY max(count) DESC, employer_name
 LIMIT 5;
 
 WITH vacancy_count AS (
